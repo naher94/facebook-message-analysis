@@ -53,7 +53,7 @@ function read_files(files){
             try {
               message_info['message'] = decodeURIComponent(escape(message['content']))
             } catch {
-              message_info['message'] = ""
+              message_info['message'] = "" //this could indicate an unsent message
             }
 
             try {
@@ -62,11 +62,12 @@ function read_files(files){
               message_info['length'] = 0
             }
 
-            // if (message['reactions'].length == undefined) {
-            //     message_info['reactions'] = 0
-            // } else {
-            //     message_info['reactions'] = 0
-            // }
+            try {
+              message_info['reactions'] = message['reactions'].length //TODO: update to include type of reactions, for now just a count
+            } catch {
+              message_info['reactions'] = 0
+            }
+
             messages_array.push(Object.assign({}, message_info, thread_info));
           }
           count_end += 1 // Count the number of files that were processsed up to the end
