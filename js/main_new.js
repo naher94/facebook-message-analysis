@@ -436,16 +436,34 @@ chart = barChart({})
 function main(){
   parse_date();
   add_sent();
-  initialize_length_ticks();
-  initialize_crossfilter();
-  initialize_barchart_parameters();
-  draw_barcharts();
-  add_message_displayer();
-  initialize_scatterplot();
-  draw_scatterplot();
-  draw_density_date();
-  draw_density_time();
-  initialize_brush();
+  // initialize_length_ticks();
+  // initialize_crossfilter();
+  // initialize_barchart_parameters();
+  // draw_barcharts();
+  // add_message_displayer();
+  // initialize_scatterplot();
+  // draw_scatterplot();
+  // draw_density_date();
+  // draw_density_time();
+  // initialize_brush();
+
+  var width = 500;
+  var height = 500;
+
+  //Create SVG element
+  var svg = d3.select("body")
+  .append("svg")
+  .attr("width", width)
+  .attr("height", height);
+
+  //Create line element inside SVG
+  svg.append("line")
+     .attr("x1", 100)
+     .attr("x2", 500)
+     .attr("y1", 50)
+     .attr("y2", 50)
+     .attr("stroke", "black")
+
   processingModal.style.display = "none"
 }
 
