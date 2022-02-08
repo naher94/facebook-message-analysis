@@ -10,49 +10,15 @@
 
 
   <body>
-    <ul class="navigation-bar">
-      <li class="title">FBMessage Explorer</li>
-      <li class = "nav-item" style="float:right">
-          <button type="button" class="custom-button" id="ExploreBtn">
-              Explore your own data
-          </button>
-      </li>
-      <li class = "nav-item" style="float:right">
-        <button type="button" class="custom-button" id="ExplanationBtn">
-            What is this ?
-        </button>
-      </li>
-
-      <li class = "nav-item" style="float:right">
-        <input name="resetButton"
-               class="custom-button"
-               type="button"
-               value="Reset All Filters"
-               onclick="reset_filters()" />
-      </li>
-    </ul>
-
+    <p>
+      <div style="text-align:center; padding:30px ">
+        <input id="file" type="file" name="file" class="inputfile" onchange="read_files(this.files)" style="float:center"webkitdirectory = true>
+      </div>
+   </p>
   </body>
 
-  <div id="ExploreModal" style="overflow: scroll;" class="modal">
-    <div class="modal-content">
-      <span class="close">&times;</span>
-
-      <h2> Show this application where the data is on your computer to this application</h2>
-      <p>
-        - Click on the button below <br>
-        <div style="text-align:center; padding:30px ">
-          <input id="file" type="file" name="file" class="inputfile" onchange="read_files(this.files)" style="float:center"webkitdirectory = true>
-          <label for="file" class="custom-button">Use your own file</label>
-        </div>
-       <br>
-
-        - Navigate to the Facebook archive you selected <br>
-        - Select the "message" Folder and confirm <br>
-     </p>
-    </div>
   </div>
-  <script src="js/pre-processing.js"></script>
+  <script src="js/pre-processing_new.js"></script>
   <script src="js/barchart.js"></script>
   <script src="js/main_new.js"></script>
   <!-- <script src="js/main.js"></script> -->
