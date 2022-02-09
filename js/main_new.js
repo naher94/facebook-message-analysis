@@ -2,29 +2,45 @@ var count_init = 0;
 var count_end = 0;
 
 function main(){
-  d3.select("body").append("p").text("Hello World!");
-  // parse_date();
-  // add_sent();
+  parse_date();
+  add_sent();
 
-  var width = 500;
-  var height = 500;
+  d3.select("body").append("p").text(messages_array.length);
 
-  //Create SVG element
-  var svg = d3.select("body")
-  .append("svg")
-  .attr("width", width)
-  .attr("height", height);
+  messages_by_send = d3.rollup(messages_array, v => v.length, d => d.sent)
+  console.log(messages_by_send)
 
-  //Create line element inside SVG
-  svg.append("line")
-     .attr("x1", 100)
-     .attr("x2", 500)
-     .attr("y1", 50)
-     .attr("y2", 50)
-     .attr("stroke", "black")
+  var data = [messages_by_send.get(false)/100000, messages_by_send.get(true)/100000];
+  console.log(data)
+  var width = 200,
+  scaleFactor = 10,
+  barHeight = 20;
 
-  processingModal.style.display = "none"
-}
+  var graph = d3.select("body")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", barHeight * data.length);
+
+  var bar = graph.selectAll("g")
+            .data(data)
+            .enter()
+            .append("g")
+            .attr("transform", function(d, i) {
+                  return "translate(0," + i * barHeight + ")";
+            });
+
+  bar.append("rect")
+  .attr("width", function(d) {
+            return d * scaleFactor;
+  })
+  .attr("height", barHeight - 1);
+
+  bar.append("text")
+  .attr("x", function(d) { return (d*scaleFactor); })
+  .attr("y", barHeight / 2)
+  .attr("dy", ".35em")
+  .text(function(d) { return d; });
+  }
 
 function add_sent(){
   // Identify the username of the user, and label each messaged as sent or not.
@@ -36,17 +52,14 @@ function add_sent(){
 
 function get_username(){
   // Identify the username of the user based on the user who appears in the most threads
-  nb_threads_per_user = d3.nest()
-        .key(function(d){return d.sender_name})
-        .key(function(d) { return d.thread; })
-        .rollup(function(leaves) { return leaves.length; })
-        .entries(messages_array)
+  nb_threads_per_user = d3.rollup(messages_array, v => v.length, d => d.sender_name)
 
-  nb_threads_per_user = nb_threads_per_user.sort(function(x, y){
-         return d3.descending(x.values.length, y.values.length);
-      })
+  return d3.greatest(nb_threads_per_user, ([, count]) => count)[0]
+}
 
-  return nb_threads_per_user[0].key
+{
+  var parseUTCDate = d3.timeParse("%Y-%m-%d");
+  var parseUTCDate2 = d3.timeParse("%W-%m-%Y");
 }
 
 function parse_date(){
