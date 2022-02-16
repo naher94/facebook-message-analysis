@@ -1,7 +1,7 @@
 var count_init = 0;
 var count_end = 0;
 
-function main(){
+function main_old(){
   parse_date();
   add_sent();
 
@@ -43,6 +43,39 @@ function main(){
   .attr("dy", ".35em")
   .text(function(d) { return d; });
   }
+
+function main(){
+  parse_date();
+  add_sent();
+
+  d3.select("body").append("p").text(messages_array.length);
+
+  messages_by_send = d3.rollup(messages_array, v => v.length, d => d.sent)
+  console.log(messages_by_send)
+
+  // var data = [messages_by_send.get(false), messages_by_send.get(true)];
+
+
+  d3.csv("/alphabet.csv").then(function(alphabet) {
+    console.log(alphabet)
+
+    chart = BarChart(alphabet, {
+      x: d => d.letter,
+      y: d => d.frequency,
+      xDomain: d3.groupSort(alphabet, ([d]) => -d.frequency, d => d.letter), // sort by descending frequency
+      yFormat: "%",
+      yLabel: "↑ Frequency",
+      width: 500,
+      height: 500,
+      color: "steelblue"
+    })
+
+    console.log(chart);
+
+    d3.select('body')
+      .append(function(){return chart;});
+  });
+}
 
 function add_sent(){
   // Identify the username of the user, and label each messaged as sent or not.

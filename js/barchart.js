@@ -1,109 +1,90 @@
-function barChart(config_global) {
-  var h_bar = 12,
-      onMouseover = function(){}
+// Copyright 2021 Observable, Inc.
+// Released under the ISC license.
+// https://observablehq.com/@d3/bar-chart
+function BarChart(data, {
+  x = (d, i) => i, // given d in data, returns the (ordinal) x-value
+  y = d => d, // given d in data, returns the (quantitative) y-value
+  title, // given d in data, returns the title text
+  marginTop = 20, // the top margin, in pixels
+  marginRight = 0, // the right margin, in pixels
+  marginBottom = 30, // the bottom margin, in pixels
+  marginLeft = 40, // the left margin, in pixels
+  width = 640, // the outer width of the chart, in pixels
+  height = 400, // the outer height of the chart, in pixels
+  xDomain, // an array of (ordinal) x-values
+  xRange = [marginLeft, width - marginRight], // [left, right]
+  yType = d3.scaleLinear, // y-scale type
+  yDomain, // [ymin, ymax]
+  yRange = [height - marginBottom, marginTop], // [bottom, top]
+  xPadding = 0.1, // amount of x-range to reserve to separate bars
+  yFormat, // a format specifier string for the y-axis
+  yLabel, // a label for the y-axis
+  color = "currentColor" // bar fill color
+} = {}) {
+  // Compute values.
+  const X = d3.map(data, x);
+  const Y = d3.map(data, y);
 
+  // Compute default domains, and unique the x-domain.
+  if (xDomain === undefined) xDomain = X;
+  if (yDomain === undefined) yDomain = [0, d3.max(Y)];
+  xDomain = new d3.InternSet(xDomain);
 
-  function chart(bc){
-    bc.xScale.domain([0, d3.max(bc.nested_data, function(d) {return d.value;})])
+  // Omit any data not present in the x-domain.
+  const I = d3.range(X.length).filter(i => xDomain.has(X[i]));
 
-    // On click, change the appearance of the bars, filter everything, and update barcharts, curves, and scatterplot
-    function onClick(d){
-      gtag('event', 'Histogram', {
-           'event_category': 'Filter',
-           'event_label': bc.title})
+  // Construct scales, axes, and formats.
+  const xScale = d3.scaleBand(xDomain, xRange).padding(xPadding);
+  const yScale = yType(yDomain, yRange);
+  const xAxis = d3.axisBottom(xScale).tickSizeOuter(0);
+  const yAxis = d3.axisLeft(yScale).ticks(height / 40, yFormat);
 
-       // Update the "clicked" sets
-       if (bc.clicked.has(d.key)) {
-         bc.clicked.delete(d.key)
-       } else {
-         bc.clicked.add(d.key)
-       }
-
-       // Apply filters
-       if (bc.clicked.size == 0) {
-         bc.dimension.filter()
-       } else {
-          bc.dimension.filter(function(a){return bc.clicked.has(a)})
-       }
-
-       // Update to match new filters
-       update_all()
-    }
-
-    // On mouseover, display tooltip
-    function onMouseover(d){
-      div.transition()
-         .duration(200)
-         .style("opacity", .9);
-      div.html(bc.get_tooltip(d.key))
-         .style("left", (d3.event.pageX) + "px")
-         .style("top", (d3.event.pageY - 28) + "px");
-      d3.select(this).classed("mouseovered", true);
-    }
-
-    // On mouseout, hide the tooltip
-    function onMouseout(d){
-      div.transition()
-         .duration(200)
-         .style("opacity", 0);
-      d3.select(this).classed("mouseovered", false);
-    }
-
-    // Select the svg element, if it exists.
-    var svg = bc.div_body.selectAll("svg").data([bc.nested_data]);
-
-    // Otherwise, create the skeletal chart.
-    var svgEnter = svg.enter().append("svg");
-
-    // Create a group for each bar. We will then add the bar and the labels to these groups
-    var bar_elements = svgEnter.selectAll(".bar-element")
-        .data(bc.nested_data).enter()
-        .append("g")
-        .attr("class", "bar-element")
-        // .attr("id", function(d){try {return this_temp.get_data(d)} catch {return "other"}})
-        .attr("transform", function(d, i) { return "translate(" + 0 + "," + i*(h_bar+2) + ")"; });
-
-    bc.xScale.domain([0, d3.max(bc.nested_data, function(d) {return d.value;})])
-
-    // Add bars
-    bar_elements.append("rect")
-        .attr("class", "bar")
-        .attr("height", h_bar)
-        .attr("width", function(d) {return (bc.xScale(d.value))})
-        .attr("transform", "translate(" + margin3.left + "," + 0 + ")")
-        .style("fill", function(d){if(bc.isColoredBarchart){return colorScale(d.key)} else {return ""}})
-        .classed("unclicked", function(d){return !(bc.clicked.size == 0 || bc.clicked.has(d.key))})
-        .on("click", onClick)
-        .on("mouseover", onMouseover)
-        .on("mouseout", onMouseout)
-
-    // Add number-labels to bar charts
-    bar_elements.append("text")
-      .attr("class", "legend_hist_num")
-      .attr("dy", "0.35em")
-      .attr("y", h_bar/2 + "px")
-      .attr("x", function(d) {return bc.xScale(d.value) +2; })
-      .attr("text-anchor", "left")
-      .text(function(d) { return d.value; })
-      .attr("transform", "translate(" + margin3.left + "," + 0 + ")")
-      .on("click", onClick)
-      .on("mouseover", onMouseover)
-      .on("mouseout", onMouseout)
-
-    // Add labels to bar charts
-    bar_elements.append("text")
-        .attr("class", "legend_hist_text")
-        .attr("dy", "0.35em")
-        .attr("y", h_bar/2 + "px")
-        .text(function(d){return bc.get_legend(d.key)})
-        .on("click", onClick)
-        .on("mouseover", onMouseover)
-        .on("mouseout", onMouseout)
-
-    // Adjust svg size
-    bbox = svgEnter.nodes()[0].getBBox();
-    svgEnter.attr("width", bbox.x + bbox.width  + "px")
-        .attr("height",bbox.y + bbox.height + "px");
+  // Compute titles.
+  if (title === undefined) {
+    const formatValue = yScale.tickFormat(100, yFormat);
+    title = i => `${X[i]}\n${formatValue(Y[i])}`;
+  } else {
+    const O = d3.map(data, d => d);
+    const T = title;
+    title = i => T(O[i], i, data);
   }
-  return chart
+
+  const svg = d3.create("svg")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("viewBox", [0, 0, width, height])
+      .attr("style", "max-width: 100%; height: auto; height: intrinsic;");
+
+  svg.append("g")
+      .attr("transform", `translate(${marginLeft},0)`)
+      .call(yAxis)
+      .call(g => g.select(".domain").remove())
+      .call(g => g.selectAll(".tick line").clone()
+          .attr("x2", width - marginLeft - marginRight)
+          .attr("stroke-opacity", 0.1))
+      .call(g => g.append("text")
+          .attr("x", -marginLeft)
+          .attr("y", 10)
+          .attr("fill", "currentColor")
+          .attr("text-anchor", "start")
+          .text(yLabel));
+
+  const bar = svg.append("g")
+      .attr("fill", color)
+    .selectAll("rect")
+    .data(I)
+    .join("rect")
+      .attr("x", i => xScale(X[i]))
+      .attr("y", i => yScale(Y[i]))
+      .attr("height", i => yScale(0) - yScale(Y[i]))
+      .attr("width", xScale.bandwidth());
+
+  if (title) bar.append("title")
+      .text(title);
+
+  svg.append("g")
+      .attr("transform", `translate(0,${height - marginBottom})`)
+      .call(xAxis);
+
+  return svg.node();
 }
