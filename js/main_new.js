@@ -10,9 +10,9 @@ function main(){
   messages_by_send = d3.rollup(messages_array, v => v.length, d => d.sent)
   console.log(messages_by_send)
 
-  var data = [messages_by_send.get(false)/100000, messages_by_send.get(true)/100000];
+  var data = [messages_by_send.get(false), messages_by_send.get(true)];
   console.log(data)
-  var width = 200,
+  var width = 600,
   scaleFactor = 10,
   barHeight = 20;
 
@@ -29,14 +29,16 @@ function main(){
                   return "translate(0," + i * barHeight + ")";
             });
 
+  var scale = d3.scaleLinear()
+            .domain([d3.min(data), d3.max(data)])
+            .range([50, 500]);
+
   bar.append("rect")
-  .attr("width", function(d) {
-            return d * scaleFactor;
-  })
+  .attr("width", function(d) { return scale(d); })
   .attr("height", barHeight - 1);
 
   bar.append("text")
-  .attr("x", function(d) { return (d*scaleFactor); })
+  .attr("x", function(d) { return scale(d); })
   .attr("y", barHeight / 2)
   .attr("dy", ".35em")
   .text(function(d) { return d; });
