@@ -50,17 +50,17 @@ function main(){
 
   d3.select("body").append("p").text(messages_array.length);
 
+  // CHART 1: Sent/received bar chart
+  // Create data for chart
   messages_by_send = d3.rollup(messages_array, v => v.length, d => d.sent)
-  console.log(messages_by_send)
+  let array1 = Array.from(messages_by_send, ([name, value]) => ({ name, value }));
+  console.log(array1);
 
-  let array = Array.from(messages_by_send, ([name, value]) => ({ name, value }));
-
-  console.log(array);
-
-  chart = BarChart(array, {
+  // chart variable returns an svg object
+  chart1 = BarChart(array1, {
     x: d => d.name,
     y: d => d.value,
-    xDomain: d3.groupSort(array, ([d]) => -d.value, d => d.name), // sort by descending frequency
+    xDomain: d3.groupSort(array1, ([d]) => -d.value, d => d.name), // sort by descending frequency
     yFormat: "n",
     yLabel: "↑ Frequency",
     width: 500,
@@ -68,34 +68,32 @@ function main(){
     color: "steelblue"
   })
 
-  console.log(chart);
+  // Add to DOM
+  d3.select('body')
+    .append(function(){return chart1;});
+
+  // CHART 2: Sender Bar chart
+  // Create data for chart
+  messages_by_send = d3.rollup(messages_array, v => v.length, d => d.sender_name)
+  let array2 = Array.from(messages_by_send, ([name, value]) => ({ name, value }));
+  console.log(array1);
+
+  // chart variable returns an svg object
+  chart2 = BarChart(array2, {
+    x: d => d.name,
+    y: d => d.value,
+    xDomain: d3.groupSort(array2, ([d]) => -d.value, d => d.name), // sort by descending frequency
+    yFormat: "n",
+    yLabel: "↑ Frequency",
+    width: 500,
+    height: 500,
+    color: "steelblue"
+  })
 
   // Add to DOM
   d3.select('body')
-    .append(function(){return chart;});
+    .append(function(){return chart2;});
 
-  // //converts CSV to an array then runs the BarChart function
-  // d3.csv("/alphabet.csv").then(function(alphabet) {
-  //   console.log(alphabet)
-
-  //   // chart variable returns an svg object
-  //   chart = BarChart(alphabet, {
-  //     x: d => d.letter,
-  //     y: d => d.frequency,
-  //     xDomain: d3.groupSort(alphabet, ([d]) => -d.frequency, d => d.letter), // sort by descending frequency
-  //     yFormat: "%",
-  //     yLabel: "↑ Frequency",
-  //     width: 500,
-  //     height: 500,
-  //     color: "steelblue"
-  //   })
-
-  //   console.log(chart);
-
-  //   // Add to DOM
-  //   d3.select('body')
-  //     .append(function(){return chart;});
-  // });
 }
 
 function add_sent(){
